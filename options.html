@@ -8,39 +8,39 @@
 </head>
 <body>
   <div class="container">
-    <h1>Slash Reading Settings</h1>
+    <h1>スラッシュリーディング 設定</h1>
 
     <div class="section">
-      <h2>OpenAI Configuration</h2>
+      <h2>OpenAI 設定</h2>
 
       <div class="form-group">
-        <label for="api-key">API Key *</label>
+        <label for="api-key">APIキー *</label>
         <input type="password" id="api-key" placeholder="sk-..." required>
-        <small>Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a></small>
+        <small><a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a> でAPIキーを取得してください</small>
       </div>
 
       <div class="form-group">
-        <label for="model">Model</label>
+        <label for="model">AIモデル</label>
         <select id="model">
-          <option value="gpt-4o-mini">GPT-4o Mini (Recommended)</option>
+          <option value="gpt-4o-mini">GPT-4o Mini (推奨)</option>
           <option value="gpt-4o">GPT-4o</option>
           <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
         </select>
-        <input type="text" id="custom-model" placeholder="Or enter custom model name" style="margin-top: 8px;">
+        <input type="text" id="custom-model" placeholder="カスタムモデル名を入力" style="margin-top: 8px;">
       </div>
 
       <div class="form-group">
-        <label for="max-tokens">Max Tokens per Batch</label>
+        <label for="max-tokens">バッチあたりの最大トークン数</label>
         <input type="number" id="max-tokens" min="100" max="4000" value="1000">
-        <small>Maximum tokens to process in a single API call</small>
+        <small>1回のAPI呼び出しで処理する最大トークン数</small>
       </div>
     </div>
 
     <div class="section">
-      <h2>Reading Level Settings</h2>
+      <h2>読解レベル設定</h2>
 
       <div class="form-group">
-        <label for="cefr-level">Default CEFR Level</label>
+        <label for="cefr-level">デフォルトのCEFRレベル</label>
         <select id="cefr-level">
           <option value="A1">A1 - 基礎 (英検3級程度)</option>
           <option value="A2">A2 - 初級 (英検準2級程度)</option>
@@ -48,7 +48,7 @@
           <option value="B2">B2 - 中上級 (英検準1級程度)</option>
         </select>
         <small>
-          <strong>レベル別ガイド (MEXT基準):</strong><br>
+          <strong>レベル別ガイド (文部科学省CEFR基準):</strong><br>
           • <b>A1</b>: 日常的な語句を理解 (2-3語の短い区切り)<br>
           • <b>A2</b>: 基本的な情報交換が可能 (3-4語の基本フレーズ)<br>
           • <b>B1</b>: 身近な話題を理解 (4-5語の意味のまとまり)<br>
@@ -58,10 +58,10 @@
     </div>
 
     <div class="section">
-      <h2>Display Settings</h2>
+      <h2>表示設定</h2>
 
       <div class="form-group">
-        <label for="slash-color">Slash Color</label>
+        <label for="slash-color">スラッシュの色</label>
         <div class="color-input-group">
           <input type="color" id="slash-color" value="#0066cc">
           <input type="text" id="slash-color-text" value="#0066cc" placeholder="#0066cc">
@@ -69,50 +69,50 @@
       </div>
 
       <div class="form-group">
-        <label for="display-method">Display Method</label>
+        <label for="display-method">表示方法</label>
         <select id="display-method">
-          <option value="css">CSS Pseudo-element (Non-destructive)</option>
-          <option value="text">Insert actual "/" characters</option>
+          <option value="css">CSS疑似要素 (非破壊的)</option>
+          <option value="text">実際の「/」文字を挿入</option>
         </select>
       </div>
     </div>
 
     <div class="section">
-      <h2>Processing Settings</h2>
+      <h2>処理設定</h2>
 
       <div class="form-group">
-        <label for="target-selector">Target Selectors</label>
-        <input type="text" id="target-selector" placeholder="p, div, span (leave empty for all)">
-        <small>CSS selectors for elements to process</small>
+        <label for="target-selector">対象セレクタ</label>
+        <input type="text" id="target-selector" placeholder="p, div, span (空の場合は全て)">
+        <small>処理する要素のCSSセレクタ</small>
       </div>
 
       <div class="form-group">
-        <label for="exclude-selector">Exclude Selectors</label>
+        <label for="exclude-selector">除外セレクタ</label>
         <input type="text" id="exclude-selector" value="script, style, code, pre, a" placeholder="script, style, code, pre, a">
-        <small>CSS selectors for elements to skip</small>
+        <small>処理をスキップする要素のCSSセレクタ</small>
       </div>
 
       <div class="form-group">
         <label class="checkbox-label">
           <input type="checkbox" id="dynamic-monitoring">
-          <span>Monitor dynamic page changes</span>
+          <span>動的なページ変更を監視</span>
         </label>
-        <small>Automatically process new content added to the page</small>
+        <small>ページに追加された新しいコンテンツを自動的に処理</small>
       </div>
     </div>
 
     <div class="section">
-      <h2>Cache Settings</h2>
+      <h2>キャッシュ設定</h2>
 
       <div class="form-group">
-        <button id="clear-cache" class="btn btn-secondary">Clear Cache</button>
+        <button id="clear-cache" class="btn btn-secondary">キャッシュをクリア</button>
         <span id="cache-size"></span>
       </div>
     </div>
 
     <div class="button-group">
-      <button id="save" class="btn btn-primary">Save Settings</button>
-      <button id="reset" class="btn btn-secondary">Reset to Defaults</button>
+      <button id="save" class="btn btn-primary">設定を保存</button>
+      <button id="reset" class="btn btn-secondary">デフォルトに戻す</button>
     </div>
 
     <div id="status" class="status" style="display: none;"></div>

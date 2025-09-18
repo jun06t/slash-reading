@@ -52,12 +52,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const apiKey = apiKeyInput.value.trim();
 
     if (!apiKey) {
-      showStatus('API key is required', 'error');
+      showStatus('APIキーは必須です', 'error');
       return;
     }
 
-    if (!apiKey.startsWith('sk-')) {
-      showStatus('Invalid API key format', 'error');
+    if (!apiKey.startsWith('sk-') && apiKey !== 'mock') {
+      showStatus('APIキーの形式が正しくありません（sk-で始まる必要があります）', 'error');
       return;
     }
 
@@ -75,26 +75,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     await chrome.storage.sync.set(settings);
-    showStatus('Settings saved successfully', 'success');
+    showStatus('設定を正常に保存しました', 'success');
   }
 
   async function resetSettings() {
     await chrome.storage.sync.set(defaultSettings);
     await loadSettings();
-    showStatus('Settings reset to defaults', 'success');
+    showStatus('設定をデフォルトにリセットしました', 'success');
   }
 
   async function clearCache() {
     await chrome.storage.local.remove('responseCache');
     await updateCacheSize();
-    showStatus('Cache cleared', 'success');
+    showStatus('キャッシュをクリアしました', 'success');
   }
 
   async function updateCacheSize() {
     const cache = await chrome.storage.local.get('responseCache');
     const size = cache.responseCache ? new Blob([JSON.stringify(cache.responseCache)]).size : 0;
     const sizeInMB = (size / (1024 * 1024)).toFixed(2);
-    cacheSizeSpan.textContent = `Cache size: ${sizeInMB} MB / 20 MB`;
+    cacheSizeSpan.textContent = `キャッシュサイズ: ${sizeInMB} MB / 20 MB`;
   }
 
   function showStatus(message, type) {

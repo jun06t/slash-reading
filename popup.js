@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (!settings.apiKey) {
-    showStatus('API key not configured. Please go to settings.', 'error');
+    showStatus('APIキーが設定されていません。設定を確認してください。', 'error');
   }
 
   toggleEnabled.addEventListener('change', async () => {
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
 
-    showStatus(enabled ? 'Slash reading enabled' : 'Slash reading disabled', 'success');
+    showStatus(enabled ? 'スラッシュリーディングを有効化しました' : 'スラッシュリーディングを無効化しました', 'success');
   });
 
   applySelection.addEventListener('click', async () => {
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       await chrome.tabs.sendMessage(tab.id, {
         action: 'PROCESS_SELECTION'
       });
-      showStatus('Processing selection...', 'info');
+      showStatus('選択部分を処理中...', 'info');
     } catch (error) {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
@@ -64,18 +64,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       await chrome.tabs.sendMessage(tab.id, {
         action: 'PROCESS_SELECTION'
       });
-      showStatus('Processing selection...', 'info');
+      showStatus('選択部分を処理中...', 'info');
     }
   });
 
   modelSelect.addEventListener('change', async () => {
     await chrome.storage.sync.set({ model: modelSelect.value });
-    showStatus('Model updated', 'success');
+    showStatus('モデルを更新しました', 'success');
   });
 
   cefrLevel.addEventListener('change', async () => {
     await chrome.storage.sync.set({ cefrLevel: cefrLevel.value });
-    showStatus('Reading level updated', 'success');
+    showStatus('読解レベルを更新しました', 'success');
   });
 
   openOptions.addEventListener('click', (e) => {
