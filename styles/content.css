@@ -1,0 +1,31 @@
+:root {
+  --sr-slash-color: #0066cc;
+}
+
+.sr-wrapper {
+  display: inline;
+}
+
+.sr-chunk {
+  display: inline;
+}
+
+.sr-chunk + .sr-chunk::before {
+  content: "/";
+  color: var(--sr-slash-color);
+  opacity: 0.9;
+  margin: 0 0.15em;
+  font-weight: normal;
+  font-style: normal;
+  display: inline;
+  user-select: none;
+}
+
+.sr-wrapper.sr-processing {
+  background-color: rgba(255, 255, 0, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.sr-wrapper.sr-error {
+  background-color: rgba(255, 0, 0, 0.1);
+}

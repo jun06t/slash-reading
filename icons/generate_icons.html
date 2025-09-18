@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator</title>
+</head>
+<body>
+    <h1>Slash Reading Icon Generator</h1>
+    <p>Right-click and save each icon:</p>
+    <div id="icons"></div>
+    <script>
+        const sizes = [16, 32, 48, 128];
+        const iconsDiv = document.getElementById('icons');
+
+        sizes.forEach(size => {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#0066cc');
+            gradient.addColorStop(1, '#0052a3');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+
+            // Text
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${Math.floor(size * 0.6)}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('/', size / 2, size / 2);
+
+            // Add to page
+            const container = document.createElement('div');
+            container.style.margin = '20px';
+            container.style.display = 'inline-block';
+
+            const label = document.createElement('p');
+            label.textContent = `${size}x${size} icon:`;
+            container.appendChild(label);
+
+            container.appendChild(canvas);
+            iconsDiv.appendChild(container);
+
+            // Convert to PNG and create download link
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const img = document.createElement('img');
+                img.src = url;
+                img.style.display = 'block';
+                img.style.border = '1px solid #ccc';
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${size}.png`;
+                a.textContent = `Download ${size}.png`;
+                a.style.display = 'block';
+                a.style.marginTop = '10px';
+
+                container.appendChild(a);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slash Reading</title>
+  <link rel="stylesheet" href="styles/popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <h1>Slash Reading</h1>
+
+    <div class="toggle-section">
+      <label class="toggle-switch">
+        <input type="checkbox" id="toggle-enabled">
+        <span class="toggle-slider"></span>
+      </label>
+      <span class="toggle-label">Enable for this page</span>
+    </div>
+
+    <div class="action-section">
+      <button id="apply-selection" class="btn btn-secondary">
+        Apply to Selection
+      </button>
+    </div>
+
+    <div class="model-section">
+      <label for="model-select">AI Model:</label>
+      <select id="model-select">
+        <option value="gpt-4o-mini">GPT-4o Mini</option>
+        <option value="gpt-4o">GPT-4o</option>
+        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+      </select>
+    </div>
+
+    <div class="status-section" id="status-section" style="display: none;">
+      <div class="status-message" id="status-message"></div>
+    </div>
+
+    <div class="footer">
+      <a href="#" id="open-options">Settings</a>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

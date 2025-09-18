@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slash Reading - Settings</title>
+  <link rel="stylesheet" href="styles/options.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Slash Reading Settings</h1>
+
+    <div class="section">
+      <h2>OpenAI Configuration</h2>
+
+      <div class="form-group">
+        <label for="api-key">API Key *</label>
+        <input type="password" id="api-key" placeholder="sk-..." required>
+        <small>Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a></small>
+      </div>
+
+      <div class="form-group">
+        <label for="model">Model</label>
+        <select id="model">
+          <option value="gpt-4o-mini">GPT-4o Mini (Recommended)</option>
+          <option value="gpt-4o">GPT-4o</option>
+          <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+        </select>
+        <input type="text" id="custom-model" placeholder="Or enter custom model name" style="margin-top: 8px;">
+      </div>
+
+      <div class="form-group">
+        <label for="max-tokens">Max Tokens per Batch</label>
+        <input type="number" id="max-tokens" min="100" max="4000" value="1000">
+        <small>Maximum tokens to process in a single API call</small>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Display Settings</h2>
+
+      <div class="form-group">
+        <label for="slash-color">Slash Color</label>
+        <div class="color-input-group">
+          <input type="color" id="slash-color" value="#0066cc">
+          <input type="text" id="slash-color-text" value="#0066cc" placeholder="#0066cc">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="display-method">Display Method</label>
+        <select id="display-method">
+          <option value="css">CSS Pseudo-element (Non-destructive)</option>
+          <option value="text">Insert actual "/" characters</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Processing Settings</h2>
+
+      <div class="form-group">
+        <label for="target-selector">Target Selectors</label>
+        <input type="text" id="target-selector" placeholder="p, div, span (leave empty for all)">
+        <small>CSS selectors for elements to process</small>
+      </div>
+
+      <div class="form-group">
+        <label for="exclude-selector">Exclude Selectors</label>
+        <input type="text" id="exclude-selector" value="script, style, code, pre, a" placeholder="script, style, code, pre, a">
+        <small>CSS selectors for elements to skip</small>
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="dynamic-monitoring">
+          <span>Monitor dynamic page changes</span>
+        </label>
+        <small>Automatically process new content added to the page</small>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Cache Settings</h2>
+
+      <div class="form-group">
+        <button id="clear-cache" class="btn btn-secondary">Clear Cache</button>
+        <span id="cache-size"></span>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button id="save" class="btn btn-primary">Save Settings</button>
+      <button id="reset" class="btn btn-secondary">Reset to Defaults</button>
+    </div>
+
+    <div id="status" class="status" style="display: none;"></div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

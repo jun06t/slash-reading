@@ -1,0 +1,52 @@
+{
+  "manifest_version": 3,
+  "name": "Slash Reading Inserter",
+  "version": "1.0.0",
+  "description": "Insert learning slashes into English sentences on web pages.",
+  "permissions": [
+    "storage",
+    "contextMenus",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Slash Reading"
+  },
+  "options_page": "options.html",
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["styles/content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "commands": {
+    "toggle_page": {
+      "suggested_key": {
+        "default": "Alt+S"
+      },
+      "description": "Toggle slash reading for entire page"
+    },
+    "process_selection": {
+      "suggested_key": {
+        "default": "Alt+D"
+      },
+      "description": "Apply slash reading to selection"
+    }
+  }
+}
