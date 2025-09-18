@@ -134,22 +134,27 @@ async function processSelection(tabId) {
 }
 
 async function processBatch(batch) {
+  console.log('[Background] Processing batch:', batch);
   const settings = await getStorage(['apiKey', 'model']);
 
   if (!settings.apiKey) {
+    console.error('[Background] No API key configured');
     throw new Error('API key not configured');
   }
 
   const cacheKey = `batch_${JSON.stringify(batch.sentences)}`;
   const cached = await getCachedResult(cacheKey);
   if (cached) {
+    console.log('[Background] Returning cached result');
     return cached;
   }
 
+  console.log('[Background] Calling OpenAI API with model:', settings.model || 'gpt-4o-mini');
   const result = await requestQueue.add(async () => {
     return await callOpenAI(settings.apiKey, settings.model || 'gpt-4o-mini', batch);
   });
 
+  console.log('[Background] API result:', result);
   await setCacheResult(cacheKey, result);
   return result;
 }

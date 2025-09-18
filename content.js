@@ -5,12 +5,21 @@
   let settings = {};
 
   async function initialize() {
+    console.log('[Slash Reading] Initializing content script...');
+
     const response = await chrome.runtime.sendMessage({ action: 'GET_STATE' });
     isEnabled = response.enabled;
+    console.log('[Slash Reading] Extension enabled:', isEnabled);
 
     settings = await chrome.runtime.sendMessage({ action: 'GET_SETTINGS' });
+    console.log('[Slash Reading] Settings loaded:', settings);
+
+    if (!settings.apiKey) {
+      console.error('[Slash Reading] No API key configured!');
+    }
 
     if (isEnabled) {
+      console.log('[Slash Reading] Processing page...');
       await processPage();
     }
 
@@ -64,7 +73,9 @@
   }
 
   async function processPage() {
+    console.log('[Slash Reading] Processing page...');
     const textNodes = extractTextNodes(document.body);
+    console.log('[Slash Reading] Found text nodes:', textNodes.length);
     await processTextNodes(textNodes);
   }
 
@@ -126,11 +137,14 @@
   }
 
   async function processTextNodes(textNodes) {
+    console.log('[Slash Reading] Processing text nodes:', textNodes.length);
     const batches = createBatches(textNodes);
+    console.log('[Slash Reading] Created batches:', batches.length);
 
     for (const batch of batches) {
       if (batch.sentences.length === 0) continue;
 
+      console.log('[Slash Reading] Sending batch to background:', batch);
       try {
         const response = await chrome.runtime.sendMessage({
           action: 'PROCESS_BATCH',
@@ -143,11 +157,16 @@
           }
         });
 
+        console.log('[Slash Reading] Received response:', response);
+
         if (response.success && response.result) {
+          console.log('[Slash Reading] Applying results:', response.result);
           applyResults(batch.nodes, response.result.results);
+        } else if (response.error) {
+          console.error('[Slash Reading] API Error:', response.error);
         }
       } catch (error) {
-        console.error('Error processing batch:', error);
+        console.error('[Slash Reading] Error processing batch:', error);
       }
     }
   }
