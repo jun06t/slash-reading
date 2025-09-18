@@ -77,6 +77,8 @@ async function handleMessage(request, sender, sendResponse) {
           'apiKey',
           'model',
           'cefrLevel',
+          'minWords',
+          'maxWords',
           'slashColor',
           'maxTokensPerBatch',
           'targetSelector',
@@ -137,29 +139,29 @@ async function processSelection(tabId) {
 
 async function processBatch(batch) {
   console.log('[Background] Processing batch:', batch);
-  const settings = await getStorage(['apiKey', 'model', 'cefrLevel']);
+  const settings = await getStorage(['apiKey', 'model', 'cefrLevel', 'minWords', 'maxWords']);
 
   if (!settings.apiKey) {
     console.error('[Background] No API key configured');
     throw new Error('API key not configured');
   }
 
-  // Include CEFR level in cache key so different levels get different results
-  const cacheKey = `${settings.cefrLevel || 'B1'}_${JSON.stringify(batch.sentences)}`;
+  // Include word settings in cache key so different settings get different results
+  const cacheKey = `${settings.cefrLevel || 'B1'}_${settings.minWords || 4}_${settings.maxWords || 6}_${JSON.stringify(batch.sentences)}`;
   const cached = await getCachedResult(cacheKey);
   if (cached) {
     console.log('[Background] Returning cached result for level', settings.cefrLevel);
     return cached;
   }
 
-  console.log('[Background] Calling OpenAI API with model:', settings.model || 'gpt-4o-mini', 'level:', settings.cefrLevel || 'B1');
+  console.log('[Background] Calling OpenAI API with model:', settings.model || 'gpt-4o-mini', 'level:', settings.cefrLevel || 'B1', 'words:', settings.minWords || 4, '-', settings.maxWords || 6);
   const result = await requestQueue.add(async () => {
     // Use mock API if in development mode or API key starts with 'mock'
     if (settings.apiKey === 'mock' || settings.apiKey.startsWith('mock-')) {
       console.log('[Background] Using mock API for testing');
-      return await callOpenAIMock(settings.apiKey, settings.model || 'gpt-4o-mini', batch, settings.cefrLevel || 'B1');
+      return await callOpenAIMock(settings.apiKey, settings.model || 'gpt-4o-mini', batch, settings.cefrLevel || 'B1', settings.minWords || 4, settings.maxWords || 6);
     }
-    return await callOpenAI(settings.apiKey, settings.model || 'gpt-4o-mini', batch, settings.cefrLevel || 'B1');
+    return await callOpenAI(settings.apiKey, settings.model || 'gpt-4o-mini', batch, settings.cefrLevel || 'B1', settings.minWords || 4, settings.maxWords || 6);
   });
 
   console.log('[Background] API result:', result);

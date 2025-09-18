@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const modelSelect = document.getElementById('model');
   const customModelInput = document.getElementById('custom-model');
   const cefrLevelSelect = document.getElementById('cefr-level');
+  const minWordsSelect = document.getElementById('min-words');
+  const maxWordsSelect = document.getElementById('max-words');
   const maxTokensInput = document.getElementById('max-tokens');
   const slashColorInput = document.getElementById('slash-color');
   const slashColorTextInput = document.getElementById('slash-color-text');
@@ -21,6 +23,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     model: 'gpt-4o-mini',
     customModel: '',
     cefrLevel: 'B1',
+    minWords: 4,
+    maxWords: 6,
     maxTokensPerBatch: 1000,
     slashColor: '#0066cc',
     displayMethod: 'css',
@@ -37,6 +41,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     modelSelect.value = merged.model;
     customModelInput.value = merged.customModel || '';
     cefrLevelSelect.value = merged.cefrLevel;
+    minWordsSelect.value = merged.minWords;
+    maxWordsSelect.value = merged.maxWords;
     maxTokensInput.value = merged.maxTokensPerBatch;
     slashColorInput.value = merged.slashColor;
     slashColorTextInput.value = merged.slashColor;
@@ -66,6 +72,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       model: customModelInput.value.trim() || modelSelect.value,
       customModel: customModelInput.value.trim(),
       cefrLevel: cefrLevelSelect.value,
+      minWords: parseInt(minWordsSelect.value),
+      maxWords: parseInt(maxWordsSelect.value),
       maxTokensPerBatch: parseInt(maxTokensInput.value),
       slashColor: slashColorInput.value,
       displayMethod: displayMethodSelect.value,
@@ -114,6 +122,36 @@ document.addEventListener('DOMContentLoaded', async () => {
   slashColorTextInput.addEventListener('input', () => {
     if (/^#[0-9A-Fa-f]{6}$/.test(slashColorTextInput.value)) {
       slashColorInput.value = slashColorTextInput.value;
+    }
+  });
+
+  // CEFRレベル変更時に推奨単語数を設定
+  cefrLevelSelect.addEventListener('change', () => {
+    const levelDefaults = {
+      'A1': { min: 2, max: 3 },
+      'A2': { min: 3, max: 4 },
+      'B1': { min: 4, max: 6 },
+      'B2': { min: 5, max: 8 },
+      'custom': null
+    };
+
+    const defaults = levelDefaults[cefrLevelSelect.value];
+    if (defaults) {
+      minWordsSelect.value = defaults.min;
+      maxWordsSelect.value = defaults.max;
+    }
+  });
+
+  // 最小/最大値の整合性チェック
+  minWordsSelect.addEventListener('change', () => {
+    if (parseInt(minWordsSelect.value) > parseInt(maxWordsSelect.value)) {
+      maxWordsSelect.value = minWordsSelect.value;
+    }
+  });
+
+  maxWordsSelect.addEventListener('change', () => {
+    if (parseInt(maxWordsSelect.value) < parseInt(minWordsSelect.value)) {
+      minWordsSelect.value = maxWordsSelect.value;
     }
   });
 

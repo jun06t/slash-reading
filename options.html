@@ -40,19 +40,53 @@
       <h2>読解レベル設定</h2>
 
       <div class="form-group">
-        <label for="cefr-level">デフォルトのCEFRレベル</label>
+        <label for="cefr-level">CEFRレベル（プリセット）</label>
         <select id="cefr-level">
           <option value="A1">A1 - 基礎 (英検3級程度)</option>
           <option value="A2">A2 - 初級 (英検準2級程度)</option>
           <option value="B1">B1 - 中級 (英検2級程度) 推奨</option>
           <option value="B2">B2 - 中上級 (英検準1級程度)</option>
+          <option value="custom">カスタム設定</option>
         </select>
+        <small>レベルを選択すると、推奨単語数が自動設定されます</small>
+      </div>
+
+      <div class="form-group">
+        <label for="min-words">最小単語数（1チャンクあたり）</label>
+        <select id="min-words">
+          <option value="2">2語</option>
+          <option value="3">3語</option>
+          <option value="4" selected>4語</option>
+          <option value="5">5語</option>
+          <option value="6">6語</option>
+          <option value="7">7語</option>
+          <option value="8">8語</option>
+        </select>
+        <small>各チャンクの最小単語数</small>
+      </div>
+
+      <div class="form-group">
+        <label for="max-words">最大単語数（1チャンクあたり）</label>
+        <select id="max-words">
+          <option value="3">3語</option>
+          <option value="4">4語</option>
+          <option value="5">5語</option>
+          <option value="6" selected>6語</option>
+          <option value="7">7語</option>
+          <option value="8">8語</option>
+          <option value="9">9語</option>
+          <option value="10">10語</option>
+        </select>
+        <small>各チャンクの最大単語数</small>
+      </div>
+
+      <div class="form-group">
         <small>
-          <strong>レベル別ガイド (文部科学省CEFR基準):</strong><br>
-          • <b>A1</b>: 日常的な語句を理解 (2-3語の短い区切り)<br>
-          • <b>A2</b>: 基本的な情報交換が可能 (3-4語の基本フレーズ)<br>
-          • <b>B1</b>: 身近な話題を理解 (4-5語の意味のまとまり)<br>
-          • <b>B2</b>: 幅広い話題を理解 (5-6語の長めの句)
+          <strong>レベル別推奨設定:</strong><br>
+          • <b>A1</b>: 最小2語、最大3語（短い区切り）<br>
+          • <b>A2</b>: 最小3語、最大4語（基本フレーズ）<br>
+          • <b>B1</b>: 最小4語、最大6語（意味のまとまり）<br>
+          • <b>B2</b>: 最小5語、最大8語（長めの句）
         </small>
       </div>
     </div>
