@@ -76,6 +76,7 @@ async function handleMessage(request, sender, sendResponse) {
         const settings = await getStorage([
           'apiKey',
           'model',
+          'cefrLevel',
           'slashColor',
           'maxTokensPerBatch',
           'targetSelector',
@@ -136,7 +137,7 @@ async function processSelection(tabId) {
 
 async function processBatch(batch) {
   console.log('[Background] Processing batch:', batch);
-  const settings = await getStorage(['apiKey', 'model']);
+  const settings = await getStorage(['apiKey', 'model', 'cefrLevel']);
 
   if (!settings.apiKey) {
     console.error('[Background] No API key configured');
@@ -150,14 +151,14 @@ async function processBatch(batch) {
     return cached;
   }
 
-  console.log('[Background] Calling OpenAI API with model:', settings.model || 'gpt-4o-mini');
+  console.log('[Background] Calling OpenAI API with model:', settings.model || 'gpt-4o-mini', 'level:', settings.cefrLevel || 'B1');
   const result = await requestQueue.add(async () => {
     // Use mock API if in development mode or API key starts with 'mock'
     if (settings.apiKey === 'mock' || settings.apiKey.startsWith('mock-')) {
       console.log('[Background] Using mock API for testing');
-      return await callOpenAIMock(settings.apiKey, settings.model || 'gpt-4o-mini', batch);
+      return await callOpenAIMock(settings.apiKey, settings.model || 'gpt-4o-mini', batch, settings.cefrLevel || 'B1');
     }
-    return await callOpenAI(settings.apiKey, settings.model || 'gpt-4o-mini', batch);
+    return await callOpenAI(settings.apiKey, settings.model || 'gpt-4o-mini', batch, settings.cefrLevel || 'B1');
   });
 
   console.log('[Background] API result:', result);

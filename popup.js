@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const toggleEnabled = document.getElementById('toggle-enabled');
   const applySelection = document.getElementById('apply-selection');
   const modelSelect = document.getElementById('model-select');
+  const cefrLevel = document.getElementById('cefr-level');
   const openOptions = document.getElementById('open-options');
   const statusSection = document.getElementById('status-section');
   const statusMessage = document.getElementById('status-message');
@@ -14,6 +15,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const settings = await chrome.runtime.sendMessage({ action: 'GET_SETTINGS' });
   if (settings.model) {
     modelSelect.value = settings.model;
+  }
+  if (settings.cefrLevel) {
+    cefrLevel.value = settings.cefrLevel;
   }
 
   if (!settings.apiKey) {
@@ -67,6 +71,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   modelSelect.addEventListener('change', async () => {
     await chrome.storage.sync.set({ model: modelSelect.value });
     showStatus('Model updated', 'success');
+  });
+
+  cefrLevel.addEventListener('change', async () => {
+    await chrome.storage.sync.set({ cefrLevel: cefrLevel.value });
+    showStatus('Reading level updated', 'success');
   });
 
   openOptions.addEventListener('click', (e) => {

@@ -121,27 +121,35 @@ input:checked + .toggle-slider:before {
   background: #d8d8d8;
 }
 
-.model-section {
+.model-section, .level-section {
   margin-bottom: 16px;
   padding: 12px;
   background: #f9f9f9;
   border-radius: 8px;
 }
 
-.model-section label {
+.model-section label, .level-section label {
   display: block;
   margin-bottom: 6px;
   font-weight: 500;
   color: #555;
 }
 
-.model-section select {
+.model-section select, .level-section select {
   width: 100%;
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
   background: white;
   font-size: 14px;
+}
+
+.level-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #777;
+  font-style: italic;
 }
 
 .status-section {

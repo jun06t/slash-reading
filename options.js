@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const apiKeyInput = document.getElementById('api-key');
   const modelSelect = document.getElementById('model');
   const customModelInput = document.getElementById('custom-model');
+  const cefrLevelSelect = document.getElementById('cefr-level');
   const maxTokensInput = document.getElementById('max-tokens');
   const slashColorInput = document.getElementById('slash-color');
   const slashColorTextInput = document.getElementById('slash-color-text');
@@ -19,6 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     apiKey: '',
     model: 'gpt-4o-mini',
     customModel: '',
+    cefrLevel: 'B1',
     maxTokensPerBatch: 1000,
     slashColor: '#0066cc',
     displayMethod: 'css',
@@ -34,6 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     apiKeyInput.value = merged.apiKey;
     modelSelect.value = merged.model;
     customModelInput.value = merged.customModel || '';
+    cefrLevelSelect.value = merged.cefrLevel;
     maxTokensInput.value = merged.maxTokensPerBatch;
     slashColorInput.value = merged.slashColor;
     slashColorTextInput.value = merged.slashColor;
@@ -62,6 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       apiKey: apiKey,
       model: customModelInput.value.trim() || modelSelect.value,
       customModel: customModelInput.value.trim(),
+      cefrLevel: cefrLevelSelect.value,
       maxTokensPerBatch: parseInt(maxTokensInput.value),
       slashColor: slashColorInput.value,
       displayMethod: displayMethodSelect.value,
