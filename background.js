@@ -144,10 +144,11 @@ async function processBatch(batch) {
     throw new Error('API key not configured');
   }
 
-  const cacheKey = `batch_${JSON.stringify(batch.sentences)}`;
+  // Include CEFR level in cache key so different levels get different results
+  const cacheKey = `${settings.cefrLevel || 'B1'}_${JSON.stringify(batch.sentences)}`;
   const cached = await getCachedResult(cacheKey);
   if (cached) {
-    console.log('[Background] Returning cached result');
+    console.log('[Background] Returning cached result for level', settings.cefrLevel);
     return cached;
   }
 
