@@ -7,21 +7,17 @@
   let progressIndicator = null;
 
   async function initialize() {
-    console.log('[Slash Reading] Initializing progressive content script...');
 
     const response = await chrome.runtime.sendMessage({ action: 'GET_STATE' });
     isEnabled = response.enabled;
-    console.log('[Slash Reading] Extension enabled:', isEnabled);
 
     settings = await chrome.runtime.sendMessage({ action: 'GET_SETTINGS' });
-    console.log('[Slash Reading] Settings loaded:', settings);
 
     if (!settings.apiKey) {
       console.error('[Slash Reading] No API key configured!');
     }
 
     if (isEnabled) {
-      console.log('[Slash Reading] Starting progressive processing...');
       await processPageProgressive();
     }
 
@@ -36,7 +32,6 @@
       if (event.key === 'Escape' && isProcessing) {
         event.preventDefault();
         stopProcessing();
-        console.log('[Slash Reading] Processing stopped with Escape key');
       }
     });
   }
@@ -68,7 +63,6 @@
 
   // Analyze page structure and identify content sections
   function identifyContentSections() {
-    console.log('[Slash Reading] Identifying content sections...');
 
     // Priority selectors for common content areas
     const contentSelectors = [
@@ -88,13 +82,11 @@
     for (const selector of contentSelectors) {
       const element = document.querySelector(selector);
       if (element) {
-        console.log('[Slash Reading] Found main content area with selector:', selector);
         return collectSections(element);
       }
     }
 
     // Fallback: collect all meaningful sections
-    console.log('[Slash Reading] No main content area found, collecting all sections...');
     return collectSections(document.body);
   }
 
@@ -129,7 +121,6 @@
       return 0;
     });
 
-    console.log('[Slash Reading] Found sections:', sections.length);
     return sections;
   }
 
@@ -164,7 +155,6 @@
   // Process page progressively, section by section
   async function processPageProgressive() {
     if (isProcessing) {
-      console.log('[Slash Reading] Already processing, skipping...');
       return;
     }
 
@@ -177,20 +167,17 @@
       const totalSections = sections.length;
       let processedCount = 0;
 
-      console.log(`[Slash Reading] Starting to process ${totalSections} sections`);
 
       // Process sections in batches
       const batchSize = 5;
       for (let i = 0; i < sections.length; i += batchSize) {
         // Check if processing should be stopped
         if (shouldStopProcessing) {
-          console.log('[Slash Reading] Processing stopped by user');
           break;
         }
 
         const batch = sections.slice(i, Math.min(i + batchSize, sections.length));
 
-        console.log(`[Slash Reading] Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(sections.length/batchSize)}`);
 
         // Process each section in the batch
         await Promise.all(batch.map(async (section) => {
@@ -210,9 +197,7 @@
       }
 
       if (shouldStopProcessing) {
-        console.log('[Slash Reading] Processing was stopped');
       } else {
-        console.log('[Slash Reading] Progressive processing complete');
       }
       hideProgress();
 
@@ -231,7 +216,6 @@
 
     if (textNodes.length === 0) return;
 
-    console.log(`[Slash Reading] Processing section with ${textNodes.length} text nodes`);
 
     // Highlight section being processed
     element.style.transition = 'background-color 0.3s';
@@ -282,20 +266,16 @@
 
   // Process text nodes with smaller batches
   async function processTextNodes(textNodes) {
-    console.log('[Slash Reading] Processing text nodes:', textNodes.length);
     const batches = createSmallBatches(textNodes);
-    console.log('[Slash Reading] Created batches:', batches.length);
 
     for (const batch of batches) {
       // Check if processing should be stopped
       if (shouldStopProcessing) {
-        console.log('[Slash Reading] Processing stopped during batch processing');
         break;
       }
 
       if (batch.sentences.length === 0) continue;
 
-      console.log('[Slash Reading] Sending batch to background:', batch.sentences.length, 'sentences');
       try {
         const response = await chrome.runtime.sendMessage({
           action: 'PROCESS_BATCH',
@@ -308,10 +288,8 @@
           }
         });
 
-        console.log('[Slash Reading] Received response:', response);
 
         if (response.success && response.result) {
-          console.log('[Slash Reading] Applying results:', response.result);
           applyResults(batch, response.result.results);
         } else if (response.error) {
           console.error('[Slash Reading] API Error:', response.error);
@@ -384,7 +362,6 @@
 
   // Apply results from API
   function applyResults(batch, results) {
-    console.log('[Slash Reading] Applying results to batch:', { batch, results });
 
     const resultMap = new Map(results.map(r => [r.id, r]));
 
@@ -412,7 +389,6 @@
     }
 
     if (node.parentNode.classList && node.parentNode.classList.contains('sr-wrapper')) {
-      console.log('[Slash Reading] Node already processed, skipping');
       return;
     }
 
@@ -554,7 +530,6 @@
   // Stop processing
   function stopProcessing() {
     shouldStopProcessing = true;
-    console.log('[Slash Reading] Stop button clicked');
   }
 
   // Hide progress indicator
