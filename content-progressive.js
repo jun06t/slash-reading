@@ -305,7 +305,7 @@
     const batches = [];
     let currentBatch = { nodeMap: new Map(), sentences: [] };
     let tokenCount = 0;
-    const maxTokensPerBatch = 300; // Much smaller batch size
+    const maxTokensPerBatch = 150; // Even smaller batch size to avoid JSON parsing errors
 
     for (const node of textNodes) {
       // Skip if node is already wrapped
@@ -349,10 +349,27 @@
     return batches;
   }
 
-  // Split text into sentences
+  // Split text into sentences while preserving punctuation
   function splitIntoSentences(text) {
-    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-    return sentences.map(s => s.trim()).filter(s => s.length > 0);
+    // Split by sentence-ending punctuation but keep the punctuation
+    const sentences = [];
+    const regex = /[^.!?]*[.!?]+/g;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      const sentence = match[0].trim();
+      if (sentence) sentences.push(sentence);
+    }
+
+    // Add any remaining text without punctuation
+    const lastIndex = regex.lastIndex || 0;
+    if (lastIndex < text.length) {
+      const remaining = text.substring(lastIndex).trim();
+      if (remaining) sentences.push(remaining);
+    }
+
+    // If no sentences found, return the whole text
+    return sentences.length > 0 ? sentences : [text.trim()].filter(s => s.length > 0);
   }
 
   // Estimate token count
@@ -362,29 +379,34 @@
 
   // Apply results from API
   function applyResults(batch, results) {
-
     const resultMap = new Map(results.map(r => [r.id, r]));
 
     for (const [nodeId, nodeData] of batch.nodeMap) {
-      const allChunks = [];
+      const processedSentences = [];
 
       for (const sentence of nodeData.sentences) {
         const result = resultMap.get(sentence.id);
-        if (result && result.chunks) {
-          allChunks.push(...result.chunks);
+        if (result && result.chunks && result.chunks.length > 0) {
+          // Join chunks with slashes and preserve the sentence structure
+          const processedSentence = result.chunks.join(' / ');
+          processedSentences.push(processedSentence);
+        } else {
+          // Keep original sentence if no chunks
+          processedSentences.push(sentence.text);
         }
       }
 
-      if (allChunks.length > 0) {
-        applyChunksToNode(nodeData.node, allChunks);
+      if (processedSentences.length > 0) {
+        // Join all processed sentences with a space
+        const fullText = processedSentences.join(' ');
+        applyProcessedTextToNode(nodeData.node, fullText);
       }
     }
   }
 
-  // Apply chunks to node
-  function applyChunksToNode(node, chunks) {
+  // Apply processed text to node
+  function applyProcessedTextToNode(node, processedText) {
     if (!node.parentNode) {
-      console.warn('[Slash Reading] Node has no parent, skipping:', node);
       return;
     }
 
@@ -395,22 +417,12 @@
     const parent = node.parentNode;
     const wrapper = document.createElement('span');
     wrapper.className = 'sr-wrapper';
-
-    chunks.forEach((chunk, index) => {
-      const span = document.createElement('span');
-      span.className = 'sr-chunk';
-      span.textContent = chunk;
-      wrapper.appendChild(span);
-
-      if (index < chunks.length - 1) {
-        wrapper.appendChild(document.createTextNode(' '));
-      }
-    });
+    wrapper.textContent = processedText;
 
     try {
       parent.replaceChild(wrapper, node);
     } catch (error) {
-      console.error('[Slash Reading] Failed to replace node:', error, node);
+      // Silently fail
     }
   }
 
