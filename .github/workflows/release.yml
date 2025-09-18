@@ -1,0 +1,81 @@
+name: Build and Release Chrome Extension
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Get version from manifest
+      id: get_version
+      run: |
+        VERSION=$(grep '"version"' manifest.json | sed 's/.*"version": "\(.*\)".*/\1/')
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "Extension version: $VERSION"
+
+    - name: Create extension package
+      run: |
+        # Create dist directory
+        mkdir -p dist
+
+        # Create zip file excluding unnecessary files
+        zip -r "dist/slash-reading-${{ steps.get_version.outputs.VERSION }}.zip" . \
+          -x "*.git*" \
+          -x "dist/*" \
+          -x "node_modules/*" \
+          -x ".github/*" \
+          -x "*.md" \
+          -x "*.sh" \
+          -x ".DS_Store" \
+          -x "spec.md"
+
+        echo "✅ Created extension package: slash-reading-${{ steps.get_version.outputs.VERSION }}.zip"
+        ls -lh dist/
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: slash-reading-extension
+        path: dist/*.zip
+
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/*.zip
+        generate_release_notes: true
+        body: |
+          ## スラッシュリーディング Chrome拡張機能 v${{ steps.get_version.outputs.VERSION }}
+
+          ### インストール方法
+
+          1. 下記の `slash-reading-${{ steps.get_version.outputs.VERSION }}.zip` をダウンロード
+          2. ダウンロードしたZIPファイルを解凍
+          3. Chromeで `chrome://extensions/` を開く
+          4. 右上の「デベロッパーモード」をONにする
+          5. 「パッケージ化されていない拡張機能を読み込む」をクリック
+          6. 解凍したフォルダを選択
+
+          ### 初期設定
+
+          1. 拡張機能アイコンをクリックして設定画面を開く
+          2. OpenAI APIキーを入力（[取得はこちら](https://platform.openai.com/api-keys)）
+          3. 読解レベルを選択（推奨: B1）
+
+          ### 使い方
+
+          - **ページ全体**: 拡張機能アイコンをクリックして「このページで有効化」をON
+          - **選択部分**: テキストを選択して右クリック→「Apply Slash Reading」
+          - **ショートカット**:
+            - `Alt+S` (Windows) / `Option+S` (Mac): ページ全体の切り替え
+            - `Alt+Shift+S` (Windows) / `Option+Shift+S` (Mac): 選択部分に適用
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
