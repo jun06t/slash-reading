@@ -161,7 +161,7 @@
 
         if (response.success && response.result) {
           console.log('[Slash Reading] Applying results:', response.result);
-          applyResults(batch.nodes, response.result.results);
+          applyResults(batch, response.result.results);
         } else if (response.error) {
           console.error('[Slash Reading] API Error:', response.error);
         }
@@ -173,7 +173,7 @@
 
   function createBatches(textNodes) {
     const batches = [];
-    let currentBatch = { nodes: [], sentences: [] };
+    let currentBatch = { nodeMap: new Map(), sentences: [] };
     let tokenCount = 0;
 
     for (const node of textNodes) {
@@ -182,21 +182,29 @@
       const text = node.textContent;
       const sentences = splitIntoSentences(text);
 
+      // Store the original node for this text
+      const nodeId = `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      currentBatch.nodeMap.set(nodeId, { node, fullText: text, sentences: [] });
+
       for (const sentence of sentences) {
         const sentenceTokens = estimateTokens(sentence);
 
         if (tokenCount + sentenceTokens > (settings.maxTokensPerBatch || 1000)) {
           if (currentBatch.sentences.length > 0) {
             batches.push(currentBatch);
-            currentBatch = { nodes: [], sentences: [] };
+            currentBatch = { nodeMap: new Map(), sentences: [] };
             tokenCount = 0;
+            // Re-add the current node to the new batch
+            currentBatch.nodeMap.set(nodeId, { node, fullText: text, sentences: [] });
           }
         }
 
-        currentBatch.nodes.push({ node, text: sentence });
+        const sentenceId = `s${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        currentBatch.nodeMap.get(nodeId).sentences.push({ id: sentenceId, text: sentence });
         currentBatch.sentences.push({
-          id: `s${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          text: sentence
+          id: sentenceId,
+          text: sentence,
+          nodeId: nodeId
         });
         tokenCount += sentenceTokens;
       }
@@ -218,25 +226,47 @@
     return Math.ceil(text.length / 4);
   }
 
-  function applyResults(nodes, results) {
+  function applyResults(batch, results) {
+    console.log('[Slash Reading] Applying results to batch:', { batch, results });
+
+    // Create a map of sentence ID to chunks
     const resultMap = new Map(results.map(r => [r.id, r]));
 
-    for (const { node, text } of nodes) {
-      const matchingResult = Array.from(resultMap.entries()).find(([id, result]) => {
-        const resultText = result.chunks.join(' ').replace(/\s+/g, ' ');
-        const nodeText = text.replace(/\s+/g, ' ');
-        return resultText === nodeText || nodeText.includes(resultText);
-      });
+    // Group chunks by node
+    const nodeChunksMap = new Map();
 
-      if (matchingResult) {
-        const [id, result] = matchingResult;
-        applyChunksToNode(node, result.chunks);
-        processedElements.add(node);
+    for (const [nodeId, nodeData] of batch.nodeMap) {
+      const allChunks = [];
+
+      // Collect all chunks for this node's sentences
+      for (const sentence of nodeData.sentences) {
+        const result = resultMap.get(sentence.id);
+        if (result && result.chunks) {
+          allChunks.push(...result.chunks);
+        }
+      }
+
+      if (allChunks.length > 0) {
+        // Apply all chunks to the node at once
+        applyChunksToNode(nodeData.node, allChunks);
+        processedElements.add(nodeData.node);
       }
     }
   }
 
   function applyChunksToNode(node, chunks) {
+    // Check if node is still in DOM and has a parent
+    if (!node.parentNode) {
+      console.warn('[Slash Reading] Node has no parent, skipping:', node);
+      return;
+    }
+
+    // Check if node has already been processed
+    if (node.parentNode.classList && node.parentNode.classList.contains('sr-wrapper')) {
+      console.log('[Slash Reading] Node already processed, skipping');
+      return;
+    }
+
     const parent = node.parentNode;
     const wrapper = document.createElement('span');
     wrapper.className = 'sr-wrapper';
@@ -252,7 +282,11 @@
       }
     });
 
-    parent.replaceChild(wrapper, node);
+    try {
+      parent.replaceChild(wrapper, node);
+    } catch (error) {
+      console.error('[Slash Reading] Failed to replace node:', error, node);
+    }
   }
 
   function restorePage() {
