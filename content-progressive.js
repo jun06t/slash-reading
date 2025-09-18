@@ -351,25 +351,14 @@
 
   // Split text into sentences while preserving punctuation
   function splitIntoSentences(text) {
-    // Split by sentence-ending punctuation but keep the punctuation
-    const sentences = [];
-    const regex = /[^.!?]*[.!?]+/g;
-    let match;
+    // Simple approach: treat entire text as one unit to preserve all punctuation
+    // This prevents text duplication and missing periods
+    const trimmed = text.trim();
+    if (!trimmed) return [];
 
-    while ((match = regex.exec(text)) !== null) {
-      const sentence = match[0].trim();
-      if (sentence) sentences.push(sentence);
-    }
-
-    // Add any remaining text without punctuation
-    const lastIndex = regex.lastIndex || 0;
-    if (lastIndex < text.length) {
-      const remaining = text.substring(lastIndex).trim();
-      if (remaining) sentences.push(remaining);
-    }
-
-    // If no sentences found, return the whole text
-    return sentences.length > 0 ? sentences : [text.trim()].filter(s => s.length > 0);
+    // For now, don't split sentences - process the whole text as one unit
+    // This ensures no text is lost or duplicated
+    return [trimmed];
   }
 
   // Estimate token count
@@ -417,7 +406,26 @@
     const parent = node.parentNode;
     const wrapper = document.createElement('span');
     wrapper.className = 'sr-wrapper';
-    wrapper.textContent = processedText;
+
+    // Check if processedText contains slashes (meaning it was processed)
+    if (processedText.includes(' / ')) {
+      // Create chunks separated by slashes for CSS styling
+      const chunks = processedText.split(' / ');
+      chunks.forEach((chunk, index) => {
+        const span = document.createElement('span');
+        span.className = 'sr-chunk';
+        span.textContent = chunk;
+        wrapper.appendChild(span);
+
+        // Add space between chunks (not after the last one)
+        if (index < chunks.length - 1) {
+          wrapper.appendChild(document.createTextNode(' '));
+        }
+      });
+    } else {
+      // If no slashes, just add the text as is
+      wrapper.textContent = processedText;
+    }
 
     try {
       parent.replaceChild(wrapper, node);

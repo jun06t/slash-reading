@@ -93,7 +93,7 @@ async function handleMessage(request, sender, sendResponse) {
     }
   } catch (error) {
     console.error('Error handling message:', error);
-    sendResponse({ error: error.message });
+    sendResponse({ error: error?.message || 'Unknown error' });
   }
 }
 
