@@ -107,7 +107,7 @@ async function toggleTabState(tabId) {
   } catch (error) {
     await chrome.scripting.executeScript({
       target: { tabId },
-      files: ['content.js']
+      files: ['content-progressive.js']
     });
 
     await chrome.tabs.sendMessage(tabId, {
@@ -125,7 +125,7 @@ async function processSelection(tabId) {
   } catch (error) {
     await chrome.scripting.executeScript({
       target: { tabId },
-      files: ['content.js']
+      files: ['content-progressive.js']
     });
 
     await chrome.tabs.sendMessage(tabId, {
