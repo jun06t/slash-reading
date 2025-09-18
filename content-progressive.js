@@ -1,6 +1,7 @@
 (async function() {
   let isEnabled = false;
   let isProcessing = false;
+  let shouldStopProcessing = false;
   let processedSections = new WeakSet();
   let settings = {};
   let progressIndicator = null;
@@ -25,6 +26,19 @@
     }
 
     setupMessageListener();
+    setupKeyboardShortcuts();
+  }
+
+  // Setup keyboard shortcuts
+  function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', (event) => {
+      // Stop processing with Escape key
+      if (event.key === 'Escape' && isProcessing) {
+        event.preventDefault();
+        stopProcessing();
+        console.log('[Slash Reading] Processing stopped with Escape key');
+      }
+    });
   }
 
   function setupMessageListener() {
@@ -155,6 +169,7 @@
     }
 
     isProcessing = true;
+    shouldStopProcessing = false;
     showProgress(0, 100);
 
     try {
@@ -167,15 +182,23 @@
       // Process sections in batches
       const batchSize = 5;
       for (let i = 0; i < sections.length; i += batchSize) {
+        // Check if processing should be stopped
+        if (shouldStopProcessing) {
+          console.log('[Slash Reading] Processing stopped by user');
+          break;
+        }
+
         const batch = sections.slice(i, Math.min(i + batchSize, sections.length));
 
         console.log(`[Slash Reading] Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(sections.length/batchSize)}`);
 
         // Process each section in the batch
         await Promise.all(batch.map(async (section) => {
-          await processSectionElement(section.element);
-          processedSections.add(section.element);
-          processedCount++;
+          if (!shouldStopProcessing) {
+            await processSectionElement(section.element);
+            processedSections.add(section.element);
+            processedCount++;
+          }
         }));
 
         // Update progress
@@ -186,7 +209,11 @@
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      console.log('[Slash Reading] Progressive processing complete');
+      if (shouldStopProcessing) {
+        console.log('[Slash Reading] Processing was stopped');
+      } else {
+        console.log('[Slash Reading] Progressive processing complete');
+      }
       hideProgress();
 
     } catch (error) {
@@ -194,6 +221,7 @@
       hideProgress();
     } finally {
       isProcessing = false;
+      shouldStopProcessing = false;
     }
   }
 
@@ -259,6 +287,12 @@
     console.log('[Slash Reading] Created batches:', batches.length);
 
     for (const batch of batches) {
+      // Check if processing should be stopped
+      if (shouldStopProcessing) {
+        console.log('[Slash Reading] Processing stopped during batch processing');
+        break;
+      }
+
       if (batch.sentences.length === 0) continue;
 
       console.log('[Slash Reading] Sending batch to background:', batch.sentences.length, 'sentences');
@@ -438,9 +472,9 @@
         position: fixed;
         top: 20px;
         right: 20px;
-        background: rgba(0, 102, 204, 0.9);
+        background: rgba(0, 102, 204, 0.95);
         color: white;
-        padding: 12px 20px;
+        padding: 12px 16px;
         border-radius: 8px;
         font-family: -apple-system, sans-serif;
         font-size: 14px;
@@ -448,7 +482,7 @@
         z-index: 10000;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
       `;
       document.body.appendChild(progressIndicator);
     }
@@ -456,12 +490,32 @@
     progressIndicator.innerHTML = `
       <div style="width: 20px; height: 20px; border: 2px solid white; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
       <span>Processing: ${current}/${total} sections</span>
+      <button id="sr-stop-btn" style="
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        padding: 4px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+        margin-left: 8px;
+      " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+        Stop
+      </button>
       <style>
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
       </style>
     `;
+
+    // Add click event listener to stop button
+    const stopBtn = progressIndicator.querySelector('#sr-stop-btn');
+    if (stopBtn) {
+      stopBtn.addEventListener('click', stopProcessing);
+    }
   }
 
   // Update progress
@@ -472,9 +526,35 @@
         <div style="width: 200px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; overflow: hidden;">
           <div style="width: ${percent}%; height: 100%; background: white; transition: width 0.3s;"></div>
         </div>
-        <span>${current}/${total} sections</span>
+        <span style="min-width: 120px;">${current}/${total} sections</span>
+        <button id="sr-stop-btn" style="
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          padding: 4px 12px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: 500;
+          transition: all 0.2s;
+          margin-left: auto;
+        " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+          Stop
+        </button>
       `;
+
+      // Add click event listener to stop button
+      const stopBtn = progressIndicator.querySelector('#sr-stop-btn');
+      if (stopBtn) {
+        stopBtn.addEventListener('click', stopProcessing);
+      }
     }
+  }
+
+  // Stop processing
+  function stopProcessing() {
+    shouldStopProcessing = true;
+    console.log('[Slash Reading] Stop button clicked');
   }
 
   // Hide progress indicator
