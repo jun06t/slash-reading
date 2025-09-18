@@ -349,11 +349,10 @@
     return batches;
   }
 
-  // Split text into sentences while preserving all text
+  // Split text into sentences
   function splitIntoSentences(text) {
-    // Don't actually split - return the whole text as one unit
-    // This preserves periods and all punctuation
-    return [text.trim()].filter(s => s.length > 0);
+    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+    return sentences.map(s => s.trim()).filter(s => s.length > 0);
   }
 
   // Estimate token count
@@ -363,32 +362,29 @@
 
   // Apply results from API
   function applyResults(batch, results) {
+
     const resultMap = new Map(results.map(r => [r.id, r]));
 
     for (const [nodeId, nodeData] of batch.nodeMap) {
-      // Process each sentence and join chunks with slashes
-      let processedText = '';
+      const allChunks = [];
 
       for (const sentence of nodeData.sentences) {
         const result = resultMap.get(sentence.id);
-        if (result && result.chunks && result.chunks.length > 0) {
-          // Join chunks with slashes for this sentence
-          processedText = result.chunks.join(' / ');
-        } else {
-          // If no chunks, use original text
-          processedText = sentence.text;
+        if (result && result.chunks) {
+          allChunks.push(...result.chunks);
         }
       }
 
-      if (processedText) {
-        applyProcessedTextToNode(nodeData.node, processedText);
+      if (allChunks.length > 0) {
+        applyChunksToNode(nodeData.node, allChunks);
       }
     }
   }
 
-  // Apply processed text to node
-  function applyProcessedTextToNode(node, processedText) {
+  // Apply chunks to node
+  function applyChunksToNode(node, chunks) {
     if (!node.parentNode) {
+      console.warn('[Slash Reading] Node has no parent, skipping:', node);
       return;
     }
 
@@ -399,12 +395,22 @@
     const parent = node.parentNode;
     const wrapper = document.createElement('span');
     wrapper.className = 'sr-wrapper';
-    wrapper.textContent = processedText;
+
+    chunks.forEach((chunk, index) => {
+      const span = document.createElement('span');
+      span.className = 'sr-chunk';
+      span.textContent = chunk;
+      wrapper.appendChild(span);
+
+      if (index < chunks.length - 1) {
+        wrapper.appendChild(document.createTextNode(' '));
+      }
+    });
 
     try {
       parent.replaceChild(wrapper, node);
     } catch (error) {
-      // Silently fail
+      console.error('[Slash Reading] Failed to replace node:', error, node);
     }
   }
 
