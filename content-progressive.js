@@ -204,6 +204,7 @@
     } catch (error) {
       console.error('[Slash Reading] Error during progressive processing:', error);
       hideProgress();
+      showError(`プログレッシブ処理エラー: ${error.message || error}`);
     } finally {
       isProcessing = false;
       shouldStopProcessing = false;
@@ -293,9 +294,11 @@
           applyResults(batch, response.result.results);
         } else if (response.error) {
           console.error('[Slash Reading] API Error:', response.error);
+          showError(`処理エラー: ${response.error}`);
         }
       } catch (error) {
         console.error('[Slash Reading] Error processing batch:', error);
+        showError(`処理中にエラーが発生しました: ${error.message || error}`);
       }
     }
   }
@@ -553,6 +556,98 @@
       progressIndicator.remove();
       progressIndicator = null;
     }
+  }
+
+  // Show error message
+  function showError(message) {
+    // Remove any existing error
+    const existingError = document.getElementById('sr-error');
+    if (existingError) {
+      existingError.remove();
+    }
+
+    const errorIndicator = document.createElement('div');
+    errorIndicator.id = 'sr-error';
+    errorIndicator.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(220, 53, 69, 0.95);
+      color: white;
+      padding: 14px 18px;
+      padding-right: 40px;
+      border-radius: 8px;
+      font-family: -apple-system, sans-serif;
+      font-size: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      z-index: 10001;
+      max-width: 400px;
+      animation: slideIn 0.3s ease-out;
+    `;
+
+    errorIndicator.innerHTML = `
+      <div style="display: flex; align-items: flex-start; gap: 10px;">
+        <span style="font-size: 18px;">⚠️</span>
+        <div>
+          <div style="font-weight: 600; margin-bottom: 4px;">エラーが発生しました</div>
+          <div style="font-size: 13px; opacity: 0.95;">${message}</div>
+        </div>
+      </div>
+      <button style="
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+      " onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">&times;</button>
+    `;
+
+    // Add animation style if not exists
+    if (!document.getElementById('sr-error-styles')) {
+      const style = document.createElement('style');
+      style.id = 'sr-error-styles';
+      style.textContent = `
+        @keyframes slideIn {
+          from {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    document.body.appendChild(errorIndicator);
+
+    // Close button handler
+    const closeBtn = errorIndicator.querySelector('button');
+    closeBtn.addEventListener('click', () => {
+      errorIndicator.style.animation = 'slideIn 0.3s ease-out reverse';
+      setTimeout(() => errorIndicator.remove(), 300);
+    });
+
+    // Auto-hide after 8 seconds
+    setTimeout(() => {
+      if (document.getElementById('sr-error')) {
+        errorIndicator.style.animation = 'slideIn 0.3s ease-out reverse';
+        setTimeout(() => errorIndicator.remove(), 300);
+      }
+    }, 8000);
   }
 
   // Initialize when DOM is ready
