@@ -9,6 +9,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
+  // Check if tab exists and is valid
+  if (!tab || !tab.id) {
+    showStatus('このページでは使用できません', 'error');
+    toggleEnabled.disabled = true;
+    applySelection.disabled = true;
+    return;
+  }
+
   const response = await chrome.runtime.sendMessage({ action: 'GET_STATE' });
   toggleEnabled.checked = response.enabled;
 
@@ -37,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).catch(async (error) => {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        files: ['content.js']
+        files: ['content-progressive.js']
       });
 
       await chrome.tabs.sendMessage(tab.id, {
@@ -58,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        files: ['content.js']
+        files: ['content-progressive.js']
       });
 
       await chrome.tabs.sendMessage(tab.id, {

@@ -305,7 +305,7 @@
     const batches = [];
     let currentBatch = { nodeMap: new Map(), sentences: [] };
     let tokenCount = 0;
-    const maxTokensPerBatch = 150; // Even smaller batch size to avoid JSON parsing errors
+    const maxTokensPerBatch = 100; // Very small batch size to avoid JSON parsing errors
 
     for (const node of textNodes) {
       // Skip if node is already wrapped
