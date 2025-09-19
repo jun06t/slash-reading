@@ -371,24 +371,35 @@
     const resultMap = new Map(results.map(r => [r.id, r]));
 
     for (const [nodeId, nodeData] of batch.nodeMap) {
-      const processedSentences = [];
+      // Use the original full text to preserve periods
+      const originalText = nodeData.fullText;
 
-      for (const sentence of nodeData.sentences) {
+      // Since we process whole text as one unit now
+      if (nodeData.sentences.length > 0) {
+        const sentence = nodeData.sentences[0];
         const result = resultMap.get(sentence.id);
-        if (result && result.chunks && result.chunks.length > 0) {
-          // Join chunks with slashes and preserve the sentence structure
-          const processedSentence = result.chunks.join(' / ');
-          processedSentences.push(processedSentence);
-        } else {
-          // Keep original sentence if no chunks
-          processedSentences.push(sentence.text);
-        }
-      }
 
-      if (processedSentences.length > 0) {
-        // Join all processed sentences with a space
-        const fullText = processedSentences.join(' ');
-        applyProcessedTextToNode(nodeData.node, fullText);
+        if (result && result.chunks && result.chunks.length > 0) {
+          // Check if original text ends with punctuation
+          const endsWithPunctuation = /[.!?]$/.test(originalText.trim());
+
+          // Join chunks with slashes
+          let processedText = result.chunks.join(' / ');
+
+          // Ensure punctuation is preserved if it was in the original
+          if (endsWithPunctuation && !processedText.match(/[.!?]$/)) {
+            // Find the last punctuation in original text
+            const lastPunctuation = originalText.trim().match(/([.!?]+)$/);
+            if (lastPunctuation) {
+              processedText += lastPunctuation[1];
+            }
+          }
+
+          applyProcessedTextToNode(nodeData.node, processedText);
+        } else {
+          // Keep original text if no chunks
+          applyProcessedTextToNode(nodeData.node, originalText);
+        }
       }
     }
   }
