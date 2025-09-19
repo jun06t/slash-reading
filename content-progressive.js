@@ -371,34 +371,18 @@
     const resultMap = new Map(results.map(r => [r.id, r]));
 
     for (const [nodeId, nodeData] of batch.nodeMap) {
-      // Use the original full text to preserve periods
-      const originalText = nodeData.fullText;
-
-      // Since we process whole text as one unit now
+      // Process the result
       if (nodeData.sentences.length > 0) {
         const sentence = nodeData.sentences[0];
         const result = resultMap.get(sentence.id);
 
         if (result && result.chunks && result.chunks.length > 0) {
-          // Check if original text ends with punctuation
-          const endsWithPunctuation = /[.!?]$/.test(originalText.trim());
-
-          // Join chunks with slashes
-          let processedText = result.chunks.join(' / ');
-
-          // Ensure punctuation is preserved if it was in the original
-          if (endsWithPunctuation && !processedText.match(/[.!?]$/)) {
-            // Find the last punctuation in original text
-            const lastPunctuation = originalText.trim().match(/([.!?]+)$/);
-            if (lastPunctuation) {
-              processedText += lastPunctuation[1];
-            }
-          }
-
+          // Simply join chunks with slashes - let the API handle punctuation
+          const processedText = result.chunks.join(' / ');
           applyProcessedTextToNode(nodeData.node, processedText);
         } else {
           // Keep original text if no chunks
-          applyProcessedTextToNode(nodeData.node, originalText);
+          applyProcessedTextToNode(nodeData.node, sentence.text);
         }
       }
     }
